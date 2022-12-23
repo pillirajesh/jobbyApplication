@@ -10,18 +10,17 @@ import Header from '../Header'
 
 import './index.css'
 
-const apiStatusConstans = {
-  initial: 'INITIAL',
+const status = {
   success: 'SUCCESS',
   failure: 'FAILURE',
-  inProgress: 'IN_PROGRESS',
+  loading: 'LOADING',
 }
 
 class JobItemDetails extends Component {
   state = {
     jobDetails: {},
     similarJobsList: [],
-    apiStatus: apiStatusConstans.initial,
+    apiStatus: status.loading,
   }
 
   componentDidMount() {
@@ -29,7 +28,6 @@ class JobItemDetails extends Component {
   }
 
   getJobDetails = async () => {
-    this.setState({apiStatus: apiStatusConstans.inProgress})
     const {match} = this.props
     const {params} = match
     const {id} = params
@@ -77,16 +75,16 @@ class JobItemDetails extends Component {
       this.setState({
         jobDetails,
         similarJobsList,
-        apiStatus: apiStatusConstans.success,
+        apiStatus: status.success,
       })
     } else {
-      this.setState({apiStatus: apiStatusConstans.failure})
+      this.setState({apiStatus: status.failure})
     }
   }
 
   loadingView = () => (
     <div className="loader-container">
-      <Loader type="ThreeDots" color="#ffffff" height="50" width="50" />
+      <Loader type="ThreeDots" color="#000000" height="50" width="50" />
     </div>
   )
 
@@ -174,7 +172,7 @@ class JobItemDetails extends Component {
           </div>
           <p className="description-paragraph">{jobDescription}</p>
           <h1 className="description">Skills </h1>
-          <ul className="skill-unorderded-list-container">
+          <ul className="skill-unordered-list-container">
             {skills.map(eachItem => (
               <li key={eachItem.name} className="skill-container">
                 <img
@@ -210,11 +208,11 @@ class JobItemDetails extends Component {
     const {apiStatus} = this.state
 
     switch (apiStatus) {
-      case apiStatusConstans.inProgress:
+      case status.loading:
         return this.loadingView()
-      case apiStatusConstans.success:
+      case status.success:
         return this.successView()
-      case apiStatusConstans.failure:
+      case status.failure:
         return this.failureView()
 
       default:

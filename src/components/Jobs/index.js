@@ -1,12 +1,19 @@
 import {Component} from 'react'
-import {Link} from 'react-router-dom'
 import Cookies from 'js-cookie'
+import Loader from 'react-loader-spinner'
 import {BsSearch} from 'react-icons/bs'
+import {Link} from 'react-router-dom'
 import {AiFillStar} from 'react-icons/ai'
 import {IoLocationSharp, IoBagRemoveSharp} from 'react-icons/io5'
 import Header from '../Header'
 
 import './index.css'
+
+const status = {
+  success: 'SUCCESS',
+  failure: 'FAILURE',
+  loading: 'LOADING',
+}
 
 const employmentTypesList = [
   {
@@ -49,44 +56,62 @@ const salaryRangesList = [
 class Jobs extends Component {
   state = {
     profile: {},
-    changeEmployment: '',
-    changeSalary: '',
-    searchInput: '',
     jobsList: [],
+    jobsApiStatus: status.loading,
+    employmentInput: '',
+    salaryInput: '',
+    searchInput: '',
   }
 
   componentDidMount() {
-    this.getProfile()
-    this.getJobs()
+    this.getUserProfile()
+    this.getJobDetails()
   }
 
-  failureJobsList = () => (
-    <div>
+  getEmploymentType = event => {
+    this.setState({employmentInput: event.target.value}, this.getJobDetails)
+  }
+
+  getSalaryRange = event => {
+    this.setState({salaryInput: event.target.value}, this.getJobDetails)
+  }
+
+  getSearchInputDetails = event => {
+    this.setState({searchInput: event.target.value}, this.getJobDetails)
+  }
+
+  searchResults = () => {
+    this.getJobDetails()
+  }
+
+  getNoJobsView = () => (
+    <div className="no-jobs-container">
       <img
+        className="no-jobs"
         src="https://assets.ccbp.in/frontend/react-js/no-jobs-img.png"
         alt="no jobs"
-        className="no-jobs"
       />
+      <h1 className="no-jobs-heading">No Jobs Found</h1>
+      <p className="no-jobs-paragraph">
+        We could not find any jobs. Try other filters.
+      </p>
     </div>
   )
 
-  getJobs = async () => {
-    const {changeEmployment, changeSalary, searchInput} = this.state
-    const apiUrl = `https://apis.ccbp.in/jobs?employment_type=${changeEmployment}&minimum_package=${changeSalary}&search=${searchInput}`
-
+  getJobDetails = async () => {
+    const {searchInput, employmentInput, salaryInput} = this.state
     const jwtToken = Cookies.get('jwt_token')
-
+    const apiUrl = `https://apis.ccbp.in/jobs?employment_type=${employmentInput}&minimum_package=${salaryInput}&search=${searchInput}`
     const options = {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${jwtToken}`,
       },
     }
-
     const response = await fetch(apiUrl, options)
     const data = await response.json()
     if (response.ok === true) {
-      const fetchedData = data.jobs.map(eachJob => ({
+      const fetchedResults = data.jobs.map(eachJob => ({
         id: eachJob.id,
         companyLogoUrl: eachJob.company_logo_url,
         employmentType: eachJob.employment_type,
@@ -96,92 +121,172 @@ class Jobs extends Component {
         rating: eachJob.rating,
         title: eachJob.title,
       }))
-      this.setState({jobsList: fetchedData})
+      this.setState({jobsList: fetchedResults, jobsApiStatus: status.success})
     } else {
-      this.failureJobsList()
+      this.setState({jobsApiStatus: status.failure})
     }
   }
 
-  getProfile = async () => {
+  getUserProfile = async () => {
     const apiUrl = 'https://apis.ccbp.in/profile'
     const jwtToken = Cookies.get('jwt_token')
     const options = {
+      method: 'GET',
       headers: {
         Authorization: `Bearer ${jwtToken}`,
       },
-      method: 'GET',
     }
 
     const response = await fetch(apiUrl, options)
     const data = await response.json()
-    const updatedProfile = data.profile_details
-    this.setState({profile: updatedProfile})
+
+    const updatedData = data.profile_details
+    this.setState({profile: updatedData})
   }
 
-  searchInputDetails = () => {
-    this.getJobs()
+  renderJobs = () => {
+    const {jobsApiStatus} = this.state
+    switch (jobsApiStatus) {
+      case status.loading:
+        return this.renderLoadingView()
+      case status.success:
+        return this.getJobsList()
+
+      case status.failure:
+        return this.getFailureView()
+      default:
+        return null
+    }
   }
 
-  onChangeEmploymentType = event => {
-    this.setState({changeEmployment: event.target.value}, this.getJobs)
+  getJobsList = () => {
+    const {jobsList} = this.state
+    return (
+      <div>
+        {jobsList.length !== 0 ? (
+          <ul className="job-item-details-container">
+            {jobsList.map(eachJobList => (
+              <li className="job-item-details-list">
+                <Link to={`/jobs/${eachJobList.id}`} className="link">
+                  <div className="image-container">
+                    <img
+                      src={eachJobList.companyLogoUrl}
+                      alt={eachJobList.title}
+                      className="company-logo"
+                    />
+                    <div>
+                      <h1 className="title">{eachJobList.title}</h1>
+                      <div className="rating-container">
+                        <AiFillStar className="star" />
+                        <p className="rating">{eachJobList.rating}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="package-container">
+                    <div className="container">
+                      <div className="location-container">
+                        <IoLocationSharp className="location" />
+                        <p className="rating">{eachJobList.location}</p>
+                      </div>
+                      <div className="location-container">
+                        <IoBagRemoveSharp className="location" />
+                        <p className="rating">{eachJobList.employmentType}</p>
+                      </div>
+                    </div>
+                    <p className="package">{eachJobList.packagePerAnnum}</p>
+                  </div>
+                  <hr className="line" />
+                  <h1 className="title">Description</h1>
+                  <p className="description1">{eachJobList.jobDescription}</p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          this.getNoJobsView()
+        )}
+      </div>
+    )
   }
 
-  onChangeSalaryType = event => {
-    this.setState({changeSalary: event.target.value}, this.getJobs)
-  }
+  renderLoadingView = () => (
+    <div className="loader-container">
+      <Loader type="ThreeDots" color="#ffffff" height="50" width="50" />
+    </div>
+  )
 
-  getSearchedResults = event => {
-    this.setState({searchInput: event.target.value}, this.getJobs)
-  }
+  renderJobsFailureView = () => (
+    <div className="failure-view-container">
+      <img
+        className="failure-image"
+        alt="failure view"
+        src="https://assets.ccbp.in/frontend/react-js/failure-img.png"
+      />
+      <h1 className="failure-heading">Oops! Something Went Wrong</h1>
+      <p className="failure-paragraph">
+        We cannot seem to find the page you are looking for.
+      </p>
+      <button
+        className="retry-button"
+        onClick={this.onClickRetryJobsButton}
+        type="button"
+      >
+        Retry
+      </button>
+    </div>
+  )
 
   render() {
-    const {profile, jobsList, searchInput} = this.state
-
+    const {profile} = this.state
     return (
       <div className="jobs-container">
         <Header />
-        <div className="main-jobs-container">
-          <div className="profile-cont">
+        <div className="main-container">
+          <div className="container2">
             <div className="profile-container">
-              <img src={profile.profile_image_url} alt={profile.name} />
+              <img
+                src={profile.profile_image_url}
+                alt={profile.name}
+                className="profile-image"
+              />
               <h1 className="profile-heading">{profile.name}</h1>
               <p className="profile-paragraph">{profile.short_bio}</p>
             </div>
-            <hr className="break" />
-            <h1 className="employment-heading">Type of Employment</h1>
-            <ul className="unordered-list">
-              {employmentTypesList.map(eachType => (
-                <li key={eachType.employmentTypeId} className="list-container">
+            <hr className="line" />
+            <h1 className="employment-type-heading">Employment Type</h1>
+            <ul className="employment-un-ordered-list-container ">
+              {employmentTypesList.map(eachJob => (
+                <li
+                  key={eachJob.employmentTypeId}
+                  className="employment-list-container"
+                >
                   <input
                     type="checkbox"
-                    id={eachType.employmentTypeId}
-                    value={eachType.employmentTypeId}
-                    onChange={this.onChangeEmploymentType}
+                    id="jobType"
+                    onChange={this.getEmploymentType}
+                    value={eachJob.employmentTypeId}
                   />
-                  <label
-                    htmlFor={eachType.employmentTypeId}
-                    className="employment-type"
-                  >
-                    {eachType.label}
+                  <label htmlFor="jobType" className="job">
+                    {eachJob.label}
                   </label>
                 </li>
               ))}
             </ul>
-            <hr className="break" />
-            <h1 className="employment-heading">Salary Range</h1>
-            <ul className="unordered-list">
+            <hr className="line" />
+            <h1 className="employment-type-heading">Salary Range</h1>
+            <ul className="employment-un-ordered-list-container ">
               {salaryRangesList.map(eachSalary => (
-                <li key={eachSalary.salaryRangeId} className="list-container">
+                <li
+                  key={eachSalary.salaryRangeId}
+                  className="employment-list-container"
+                >
                   <input
                     type="radio"
-                    id={eachSalary.salaryRangeId}
+                    id="salaryRange"
+                    onChange={this.getSalaryRange}
                     value={eachSalary.salaryRangeId}
-                    onChange={this.onChangeSalaryType}
                   />
-                  <label
-                    htmlFor={eachSalary.salaryRangeId}
-                    className="employment-type"
-                  >
+                  <label htmlFor="salaryRange" className="job">
                     {eachSalary.label}
                   </label>
                 </li>
@@ -189,66 +294,26 @@ class Jobs extends Component {
             </ul>
           </div>
           <div>
-            <div className="search-container">
+            <div>
               <input
                 type="search"
-                className="search-input"
-                onChange={this.getSearchedResults}
                 placeholder="Search"
-                value={searchInput}
+                className="search-input"
+                onChange={this.getSearchInputDetails}
               />
               <button
-                onClick={this.searchInputDetails}
+                onClick={this.searchResults}
                 type="button"
                 className="btn-search"
               >
-                <BsSearch className="search" />
+                <BsSearch className="search-icon" />
               </button>
-
-              <ul className="jobs-container">
-                {jobsList.map(job => (
-                  <li key={job.id} className="jobs-list">
-                    <Link to={`/jobs/${job.id}`} className="link">
-                      <div className="image-container">
-                        <img
-                          src={job.companyLogoUrl}
-                          alt={job.title}
-                          className="company-logo"
-                        />
-                        <div>
-                          <h1 className="title">{job.title}</h1>
-                          <div className="rating-container">
-                            <AiFillStar className="star" />
-                            <p className="rating">{job.rating}</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="package-container">
-                        <div className="container">
-                          <div className="location-container">
-                            <IoLocationSharp className="location" />
-                            <p className="rating">{job.location}</p>
-                          </div>
-                          <div className="location-container">
-                            <IoBagRemoveSharp className="location" />
-                            <p className="rating">{job.employmentType}</p>
-                          </div>
-                        </div>
-                        <p className="package">{job.packagePerAnnum}</p>
-                      </div>
-                      <hr className="line" />
-                      <h1 className="title">Description</h1>
-                      <p className="description1">{job.jobDescription}</p>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
             </div>
+            <div>{this.renderJobs()}</div>
           </div>
         </div>
       </div>
     )
   }
 }
-
 export default Jobs

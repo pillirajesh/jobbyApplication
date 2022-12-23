@@ -92,12 +92,12 @@
   justify-content: flex-start;
   align-items: center;
 }
-.skill-unorderded-list-container {
+.skill-unordered-list-container {
   padding-left: 0px;
   flex-wrap: wrap;
   display: flex;
 }
-.para {
+.paragraph1 {
   color: #ffffff;
   font-family: Roboto;
   font-size: 15px;

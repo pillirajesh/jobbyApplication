@@ -1,27 +1,21 @@
 import {Component} from 'react'
-import Cookies from 'js-cookie'
 import {Redirect} from 'react-router-dom'
-
+import Cookies from 'js-cookie'
 import './index.css'
 
 class Login extends Component {
-  state = {
-    username: '',
-    password: '',
-    showSubmitError: false,
-    errorMsg: '',
-  }
+  state = {username: '', password: '', showError: false, errorMessage: ''}
 
-  changeUserInput = event => {
+  getUserName = event => {
     this.setState({username: event.target.value})
   }
 
-  changePasswordInput = event => {
+  getPassword = event => {
     this.setState({password: event.target.value})
   }
 
   loginFailure = errorMessage => {
-    this.setState({showSubmitError: true, errorMsg: errorMessage})
+    this.setState({errorMessage, showError: true})
   }
 
   loginSuccess = jwtToken => {
@@ -30,15 +24,18 @@ class Login extends Component {
     history.replace('/')
   }
 
-  submitLoginDetails = async event => {
+  submitForm = async event => {
     event.preventDefault()
     const {username, password} = this.state
+
     const userDetails = {username, password}
+
     const apiUrl = 'https://apis.ccbp.in/login'
     const options = {
       method: 'POST',
       body: JSON.stringify(userDetails),
     }
+
     const response = await fetch(apiUrl, options)
     const data = await response.json()
     if (response.ok === true) {
@@ -49,61 +46,60 @@ class Login extends Component {
   }
 
   render() {
-    const {showSubmitError, errorMsg, username, password} = this.state
+    const {username, password, showError, errorMessage} = this.state
     const jwtToken = Cookies.get('jwt_token')
     if (jwtToken !== undefined) {
       return <Redirect to="/" />
     }
     return (
-      <form onSubmit={this.submitLoginDetails}>
-        <div className="app-container">
-          <div className="login-container">
-            <div className="logo-container">
-              <img
-                src="https://assets.ccbp.in/frontend/react-js/logo-img.png"
-                className="logo"
-                alt="website logo"
-              />
-            </div>
-            <div className="input-container">
-              <div>
-                <label className="label" htmlFor="username">
+      <div className="app-container">
+        <div className="login-container">
+          <div className="login-image-container">
+            <img
+              src="https://assets.ccbp.in/frontend/react-js/logo-img.png"
+              alt="website logo"
+              className="web-logo"
+            />
+          </div>
+          <div className="label-container">
+            <div>
+              <form onSubmit={this.submitForm}>
+                <label htmlFor="userInput" className="label">
                   USERNAME
                 </label>
                 <br />
                 <input
                   type="text"
-                  id="username"
                   className="input"
-                  placeholder="Username"
+                  id="userInput"
+                  onChange={this.getUserName}
                   value={username}
-                  onChange={this.changeUserInput}
+                  placeholder="Username"
                 />
                 <br />
-                <label className="label" htmlFor="password">
+
+                <label htmlFor="passwdInput" className="label">
                   PASSWORD
                 </label>
                 <br />
                 <input
                   type="password"
-                  id="password"
                   className="input"
-                  placeholder="Password"
+                  id="passwdInput"
+                  onChange={this.getPassword}
                   value={password}
-                  onChange={this.changePasswordInput}
+                  placeholder="Password"
                 />
                 <br />
                 <button type="submit" className="login-button">
                   Login
                 </button>
-                {showSubmitError && (
-                  <p className="error-message">*{errorMsg}</p>
-                )}
-              </div>
+                {showError && <p className="error-message">*{errorMessage}</p>}
+              </form>
             </div>
           </div>
         </div>
-      </form>
+      </div>
     )
   }
 }

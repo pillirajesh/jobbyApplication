@@ -3,8 +3,8 @@ import Jobs from './components/Jobs'
 import Home from './components/Home'
 import Login from './components/Login'
 import ProtectedRoute from './components/ProtectedRoute'
-import JobItemDetails from './components/JobItemDetails'
 import NotFound from './components/NotFound'
+import JobItemDetails from './components/JobItemDetails'
 import './App.css'
 
 // Replace your code here

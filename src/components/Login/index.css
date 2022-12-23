@@ -1,66 +1,74 @@
 .app-container {
   background-color: #000000;
-  min-height: 100vh;
   background-size: cover;
+  min-height: 100vh;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
 }
 
-.error-message {
-  font-size: 15px;
-  font-weight: 500;
-  color: #ff0b37;
+.login-container {
+  background-color: #202020;
+  height: 70vh;
+  width: 60%;
+  padding-top: 20px;
+  border-radius: 10px;
 }
 
-.login-container {
-  background-color: #121212;
-  height: 60vh;
-  width: 40vw;
-  padding-top: 20px;
+.login-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .label {
   font-family: 'roboto';
-  font-size: 13px;
-  font-weight: bold;
-  color: #f8fafc;
-}
-
-.input-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
+  font-weight: 400;
+  color: #cbd5e1;
+  font-size: 15px;
 }
 
 .input {
   background-color: transparent;
   font-family: 'roboto';
-  font-size: 10px;
+  font-weight: 300;
   color: #7e858e;
-  width: 100%;
-  height: 35px;
   border: 1px solid #7e858e;
   padding: 10px;
+  font-size: 15px;
   border-radius: 5px;
+  width: 350px;
   margin-top: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   outline: none;
 }
 
 .login-button {
-  background-color: #4f46e5;
-  font-family: 'roboto';
-  font-size: 10px;
-  color: #7e858e;
-  width: 100%;
-  height: 35px;
-  color: #ffffff;
-  margin-top: 20px;
-  border: none;
   border-radius: 5px;
+  border: none;
+  background-color: #4f46e5;
+  color: #ffffff;
+  font-family: 'roboto';
+  font-weight: 300;
+  padding: 10px;
+  width: 350px;
+  height: 45px;
+  margin-top: 17px;
   cursor: pointer;
   outline: none;
+}
+
+.label-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+}
+
+.error-message {
+  font-family: 'roboto';
+  font-weight: 400;
+  color: #ff0b37;
+  font-size: 16px;
 }
